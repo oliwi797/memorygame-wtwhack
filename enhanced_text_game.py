@@ -569,10 +569,10 @@ def show_console_credits():
     """Display Star Wars-style opening credits in the console"""
     import os
     import time
-    
+
     # Clear screen
     os.system('cls' if os.name == 'nt' else 'clear')
-    
+
     credits_lines = [
         ("", ""),
         ("EPISODE WTW", Colors.ULTRAVIOLET_PRIMARY),
@@ -609,9 +609,9 @@ def show_console_credits():
         ("", ""),
         ("", ""),
     ]
-    
+
     print(f"{Colors.RESET}")
-    
+
     # Simulate scrolling by adding lines with delays
     for line_text, color in credits_lines:
         if line_text:
@@ -621,9 +621,9 @@ def show_console_credits():
             print(f"{color}{centered_text}{Colors.RESET}")
         else:
             print()  # Empty line
-        
+
         time.sleep(0.8)  # Pause between lines for dramatic effect
-        
+
         # Check if user wants to skip
         try:
             import select
@@ -634,13 +634,13 @@ def show_console_credits():
         except:
             # Windows doesn't support select, so just continue
             pass
-    
+
     # Final pause
     time.sleep(2)
-    
+
     # Clear screen for game start
     os.system('cls' if os.name == 'nt' else 'clear')
-    
+
     # Show "Press any key to continue" message
     print(f"{Colors.ULTRAVIOLET_PRIMARY}{'=' * 60}{Colors.RESET}")
     print(f"{Colors.FIREWORKS_PRIMARY}{'OPENING CREDITS COMPLETE':^60}{Colors.RESET}")
@@ -648,7 +648,7 @@ def show_console_credits():
     print()
     print(f"{Colors.STRATOSPHERE_PRIMARY}Press ENTER to begin your adventure...{Colors.RESET}")
     input()
-    
+
     # Clear screen again
     os.system('cls' if os.name == 'nt' else 'clear')
 
@@ -656,7 +656,7 @@ if __name__ == "__main__":
     try:
         # Show opening credits
         show_console_credits()
-        
+
         # Start the game
         game = EnhancedTextMemoryGame()
         game.play()

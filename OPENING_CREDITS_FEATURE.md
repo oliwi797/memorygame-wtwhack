@@ -53,11 +53,11 @@ class ScrollingCredits:
         # Multiple font sizes for hierarchy
         # Credits text with formatting and colors
         # Animation state management
-    
+
     def update(self, dt):
         # Smooth scrolling animation
         # Automatic completion detection
-    
+
     def draw(self):
         # Starfield background
         # Text rendering with perspective

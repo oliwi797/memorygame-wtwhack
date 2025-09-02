@@ -817,7 +817,7 @@ class ScrollingCredits:
         self.font_large = pygame.font.Font(None, 48)
         self.font_medium = pygame.font.Font(None, 36)
         self.font_small = pygame.font.Font(None, 28)
-        
+
         # Credits text with Star Wars-style humor
         self.credits_text = [
             ("EPISODE WTW", self.font_title, COLORS['primary']),
@@ -840,7 +840,7 @@ class ScrollingCredits:
             ("Jedi Master Yoda sometimes", self.font_medium, COLORS['text_primary']),
             ("forgets where he parked his", self.font_medium, COLORS['text_primary']),
             ("lightsaber... In his Honda Civic,", self.font_medium, COLORS['success']),
-            ("it probably is! 🚗", self.font_medium, COLORS['success']),
+            ("it probably is!", self.font_medium, COLORS['success']),
             ("", self.font_small, COLORS['text_primary']),
             ("", self.font_small, COLORS['text_primary']),
             ("Powered by the Force", self.font_medium, COLORS['primary_light']),
@@ -855,19 +855,19 @@ class ScrollingCredits:
             ("", self.font_small, COLORS['text_primary']),
             ("Press SPACE to begin your journey...", self.font_medium, COLORS['primary'])
         ]
-        
+
         # Animation state
         self.scroll_y = self.screen.get_height()
         self.scroll_speed = 50  # pixels per second
         self.total_height = len(self.credits_text) * 50  # approximate height
-        
+
     def update(self, dt):
         """Update scroll position"""
         self.scroll_y -= self.scroll_speed * dt / 1000
-        
+
         # Check if credits have finished scrolling
         return self.scroll_y > -self.total_height - 200
-    
+
     def handle_event(self, event):
         """Handle skip events"""
         if event.type == pygame.KEYDOWN:
@@ -876,11 +876,11 @@ class ScrollingCredits:
         elif event.type == pygame.MOUSEBUTTONDOWN:
             return False  # Skip credits
         return True  # Continue showing credits
-    
+
     def draw(self):
         """Draw the scrolling credits"""
         self.screen.fill(COLORS['background'])
-        
+
         # Add starfield background effect
         for i in range(50):
             star_x = random.randint(0, self.screen.get_width())
@@ -888,34 +888,45 @@ class ScrollingCredits:
             star_brightness = random.randint(100, 255)
             star_color = (star_brightness, star_brightness, star_brightness)
             pygame.draw.circle(self.screen, star_color, (star_x, star_y), 1)
-        
+
         # Draw credits text
         current_y = self.scroll_y
         screen_center_x = self.screen.get_width() // 2
-        
+
         for text, font, color in self.credits_text:
             if -100 < current_y < self.screen.get_height() + 100:  # Only draw visible text
                 if text:  # Skip empty lines for rendering
                     text_surface = font.render(text, True, color)
                     text_rect = text_surface.get_rect(center=(screen_center_x, current_y))
                     self.screen.blit(text_surface, text_rect)
-            
+
             current_y += 50  # Line spacing
-        
-        # Add fade effect at top and bottom
-        fade_height = 100
+
+        # Add improved fade effect at top and bottom for better text masking
+        fade_height = 150  # Increased height for better coverage
+
+        # Create fade surfaces
+        top_fade = pygame.Surface((self.screen.get_width(), fade_height), pygame.SRCALPHA)
+        bottom_fade = pygame.Surface((self.screen.get_width(), fade_height), pygame.SRCALPHA)
+
+        # Create proper gradient from fully opaque to transparent
         for i in range(fade_height):
-            alpha = int(255 * (i / fade_height))
-            fade_color = (*COLORS['background'], alpha)
-            
-            # Top fade
-            fade_surface = pygame.Surface((self.screen.get_width(), 1), pygame.SRCALPHA)
-            fade_surface.fill(fade_color)
-            self.screen.blit(fade_surface, (0, i))
-            
-            # Bottom fade
-            self.screen.blit(fade_surface, (0, self.screen.get_height() - i - 1))
-        
+            # For top fade: fully opaque at top (i=0), transparent at bottom (i=fade_height-1)
+            top_alpha = int(255 * (1 - i / fade_height))
+            top_color = (*COLORS['background'], top_alpha)
+
+            # For bottom fade: transparent at top (i=0), fully opaque at bottom (i=fade_height-1)
+            bottom_alpha = int(255 * (i / fade_height))
+            bottom_color = (*COLORS['background'], bottom_alpha)
+
+            # Fill each row of the fade surfaces
+            pygame.draw.rect(top_fade, top_color, (0, i, self.screen.get_width(), 1))
+            pygame.draw.rect(bottom_fade, bottom_color, (0, i, self.screen.get_width(), 1))
+
+        # Apply the fade overlays
+        self.screen.blit(top_fade, (0, 0))
+        self.screen.blit(bottom_fade, (0, self.screen.get_height() - fade_height))
+
         pygame.display.flip()
 
 def show_credits():
@@ -923,34 +934,34 @@ def show_credits():
     pygame.init()
     screen = pygame.display.set_mode((800, 600))
     pygame.display.set_caption("Star Wars Memory Game - Opening Credits")
-    
+
     credits = ScrollingCredits(screen)
     clock = pygame.time.Clock()
-    
+
     while True:
         dt = clock.tick(60)
-        
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-            
+
             if not credits.handle_event(event):
                 pygame.quit()
                 return  # Skip to game
-        
+
         if not credits.update(dt):
             pygame.quit()
             return  # Credits finished
-        
+
         credits.draw()
 
 if __name__ == "__main__":
     print("Starting Enhanced Star Wars Memory Game...")
-    
+
     # Show opening credits
     show_credits()
-    
+
     # Start the actual game
     pygame.init()  # Re-initialize after credits
     game = MemoryGame()
