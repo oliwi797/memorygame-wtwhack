@@ -92,11 +92,48 @@ class Particle:
         self.vy += 0.1  # gravity
         self.age += dt
 
+    def is_alive(self):
+        """Check if particle is still alive"""
+        return self.age < self.lifetime
+
     def draw(self, screen):
         alpha = max(0, 1 - self.age / self.lifetime)
         if alpha > 0:
             size = max(1, int(self.size * alpha))
             pygame.draw.circle(screen, self.color, (int(self.x), int(self.y)), size)
+
+class Star:
+    """Twinkling star for background starfield"""
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+        self.brightness = random.uniform(0.3, 1.0)
+        self.twinkle_speed = random.uniform(0.001, 0.003)
+        self.twinkle_phase = random.uniform(0, 2 * 3.14159)
+        self.size = random.randint(1, 3)
+        # Use subtle colors for stars
+        self.base_color = random.choice([
+            COLORS['text_secondary'],
+            COLORS['primary_light'],
+            (255, 255, 255),
+            COLORS['stratosphere_light']
+        ])
+
+    def update(self, dt):
+        self.twinkle_phase += self.twinkle_speed * dt
+
+    def draw(self, screen):
+        # Calculate twinkling effect
+        twinkle = 0.5 + 0.5 * math.sin(self.twinkle_phase)
+        current_brightness = self.brightness * twinkle
+
+        # Apply brightness to color
+        color = tuple(int(c * current_brightness) for c in self.base_color)
+
+        if self.size > 1:
+            pygame.draw.circle(screen, color, (int(self.x), int(self.y)), self.size)
+        else:
+            screen.set_at((int(self.x), int(self.y)), color)
 
     def is_alive(self):
         return self.age < self.lifetime
@@ -389,11 +426,22 @@ class LoadingScreen:
         self.dots = 0
         self.dot_timer = 0
 
+        # Create starfield for loading screen
+        self.stars = []
+        for _ in range(100):  # Fewer stars for loading screen
+            x = random.randint(0, WINDOW_WIDTH)
+            y = random.randint(0, WINDOW_HEIGHT)
+            self.stars.append(Star(x, y))
+
     def update(self, dt):
         self.dot_timer += dt
         if self.dot_timer > 500:  # Change dots every 500ms
             self.dots = (self.dots + 1) % 4
             self.dot_timer = 0
+
+        # Update stars
+        for star in self.stars:
+            star.update(dt)
 
     def set_progress(self, current, total, message="Loading"):
         self.progress = int((current / total) * 100)
@@ -402,8 +450,12 @@ class LoadingScreen:
     def draw(self, message="Loading Star Wars characters"):
         self.screen.fill(COLORS['background'])
 
+        # Draw twinkling starfield
+        for star in self.stars:
+            star.draw(self.screen)
+
         # Title
-        title = self.title_font.render("Star Wars Memory Game", True, COLORS['fireworks'])
+        title = self.title_font.render("Star Wars Memory Game", True, COLORS['primary'])
         title_rect = title.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 - 100))
         self.screen.blit(title, title_rect)
 
@@ -465,6 +517,10 @@ class MemoryGame:
         self.screen_shake = 0
         self.combo_count = 0
         self.last_match_time = 0
+
+        # Starfield background
+        self.stars: List[Star] = []
+        self.create_starfield()
 
         # UI state
         self.mouse_pos = (0, 0)
@@ -552,6 +608,14 @@ class MemoryGame:
         for _ in range(count):
             self.particles.append(Particle(x, y))
 
+    def create_starfield(self):
+        """Create a beautiful starfield background"""
+        num_stars = 150  # Adjust for desired density
+        for _ in range(num_stars):
+            x = random.randint(0, WINDOW_WIDTH)
+            y = random.randint(0, WINDOW_HEIGHT)
+            self.stars.append(Star(x, y))
+
     def handle_card_click(self, pos: Tuple[int, int]):
         """Enhanced card click handling with smooth animations"""
         if self.game_won or len(self.flipped_cards) >= 2:
@@ -634,6 +698,10 @@ class MemoryGame:
         for particle in self.particles:
             particle.update(dt)
 
+        # Update stars
+        for star in self.stars:
+            star.update(dt)
+
         # Update screen shake
         if self.screen_shake > 0:
             self.screen_shake -= dt
@@ -653,14 +721,18 @@ class MemoryGame:
         # Background with gradient effect
         self.screen.fill(COLORS['background'])
 
+        # Draw twinkling starfield
+        for star in self.stars:
+            star.draw(self.screen)
+
         # Title with glow effect
-        title_text = self.title_font.render("Star Wars Memory Game", True, COLORS['fireworks'])
+        title_text = self.title_font.render("Star Wars Memory Game", True, COLORS['primary'])
         title_rect = title_text.get_rect()
         title_rect.centerx = WINDOW_WIDTH // 2 + shake_offset[0]
         title_rect.y = 20 + shake_offset[1]
 
         # Glow effect for title
-        glow_text = self.title_font.render("Star Wars Memory Game", True, (255, 215, 0, 100))
+        glow_text = self.title_font.render("Star Wars Memory Game", True, COLORS['primary_light'])
         for offset in [(1, 1), (-1, -1), (1, -1), (-1, 1)]:
             glow_rect = title_rect.copy()
             glow_rect.x += offset[0]
