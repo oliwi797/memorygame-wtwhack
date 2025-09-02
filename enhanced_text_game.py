@@ -565,8 +565,99 @@ class EnhancedTextMemoryGame:
         print(f"\n{Colors.FIREWORKS_PRIMARY}✨ The galaxy celebrates your victory! ✨{Colors.RESET}")
         print(f"{Colors.ULTRAVIOLET_PRIMARY}🎊 Thank you for playing the WTW Enhanced Star Wars Memory Game! 🎊{Colors.RESET}")
 
+def show_console_credits():
+    """Display Star Wars-style opening credits in the console"""
+    import os
+    import time
+    
+    # Clear screen
+    os.system('cls' if os.name == 'nt' else 'clear')
+    
+    credits_lines = [
+        ("", ""),
+        ("EPISODE WTW", Colors.ULTRAVIOLET_PRIMARY),
+        ("", ""),
+        ("THE MEMORY AWAKENS", Colors.FIREWORKS_PRIMARY),
+        ("", ""),
+        ("", ""),
+        ("It is a time of forgotten faces and", Colors.GREY_200),
+        ("hidden identities. The galaxy's greatest", Colors.GREY_200),
+        ("heroes have been scattered across", Colors.GREY_200),
+        ("mysterious cards, waiting to be", Colors.GREY_200),
+        ("matched by a worthy challenger.", Colors.GREY_200),
+        ("", ""),
+        ("Using the power of the WTW", Colors.GREY_200),
+        ("ultraviolet interface, brave players", Colors.GREY_200),
+        ("must flip cards and find pairs", Colors.GREY_200),
+        ("before time runs out.", Colors.GREY_200),
+        ("", ""),
+        ("Little do they know that even", Colors.GREY_200),
+        ("Jedi Master Yoda sometimes", Colors.GREY_200),
+        ("forgets where he parked his", Colors.GREY_200),
+        ("lightsaber... In his Honda Civic,", Colors.SUCCESS_PRIMARY),
+        ("it probably is! 🚗", Colors.SUCCESS_PRIMARY),
+        ("", ""),
+        ("", ""),
+        ("Powered by the Force", Colors.ULTRAVIOLET_LIGHT),
+        ("(and a really good API)", Colors.GREY_400),
+        ("", ""),
+        ("Enhanced with WTW Magic", Colors.ULTRAVIOLET_PRIMARY),
+        ("Ultraviolet Theme", Colors.ULTRAVIOLET_LIGHT),
+        ("", ""),
+        ("", ""),
+        ("May the Cards be with you!", Colors.FIREWORKS_PRIMARY),
+        ("", ""),
+        ("", ""),
+    ]
+    
+    print(f"{Colors.RESET}")
+    
+    # Simulate scrolling by adding lines with delays
+    for line_text, color in credits_lines:
+        if line_text:
+            # Center the text
+            terminal_width = 80  # Assume standard terminal width
+            centered_text = line_text.center(terminal_width)
+            print(f"{color}{centered_text}{Colors.RESET}")
+        else:
+            print()  # Empty line
+        
+        time.sleep(0.8)  # Pause between lines for dramatic effect
+        
+        # Check if user wants to skip
+        try:
+            import select
+            import sys
+            if sys.stdin in select.select([sys.stdin], [], [], 0)[0]:
+                input()  # Consume any input
+                break
+        except:
+            # Windows doesn't support select, so just continue
+            pass
+    
+    # Final pause
+    time.sleep(2)
+    
+    # Clear screen for game start
+    os.system('cls' if os.name == 'nt' else 'clear')
+    
+    # Show "Press any key to continue" message
+    print(f"{Colors.ULTRAVIOLET_PRIMARY}{'=' * 60}{Colors.RESET}")
+    print(f"{Colors.FIREWORKS_PRIMARY}{'OPENING CREDITS COMPLETE':^60}{Colors.RESET}")
+    print(f"{Colors.ULTRAVIOLET_PRIMARY}{'=' * 60}{Colors.RESET}")
+    print()
+    print(f"{Colors.STRATOSPHERE_PRIMARY}Press ENTER to begin your adventure...{Colors.RESET}")
+    input()
+    
+    # Clear screen again
+    os.system('cls' if os.name == 'nt' else 'clear')
+
 if __name__ == "__main__":
     try:
+        # Show opening credits
+        show_console_credits()
+        
+        # Start the game
         game = EnhancedTextMemoryGame()
         game.play()
     except KeyboardInterrupt:

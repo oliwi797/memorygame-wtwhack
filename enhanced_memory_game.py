@@ -809,7 +809,149 @@ class MemoryGame:
         pygame.quit()
         sys.exit()
 
+class ScrollingCredits:
+    """Star Wars-style scrolling credits with original content"""
+    def __init__(self, screen):
+        self.screen = screen
+        self.font_title = pygame.font.Font(None, 64)
+        self.font_large = pygame.font.Font(None, 48)
+        self.font_medium = pygame.font.Font(None, 36)
+        self.font_small = pygame.font.Font(None, 28)
+        
+        # Credits text with Star Wars-style humor
+        self.credits_text = [
+            ("EPISODE WTW", self.font_title, COLORS['primary']),
+            ("", self.font_small, COLORS['text_primary']),
+            ("THE MEMORY AWAKENS", self.font_large, COLORS['fireworks']),
+            ("", self.font_small, COLORS['text_primary']),
+            ("", self.font_small, COLORS['text_primary']),
+            ("It is a time of forgotten faces and", self.font_medium, COLORS['text_primary']),
+            ("hidden identities. The galaxy's greatest", self.font_medium, COLORS['text_primary']),
+            ("heroes have been scattered across", self.font_medium, COLORS['text_primary']),
+            ("mysterious cards, waiting to be", self.font_medium, COLORS['text_primary']),
+            ("matched by a worthy challenger.", self.font_medium, COLORS['text_primary']),
+            ("", self.font_small, COLORS['text_primary']),
+            ("Using the power of the WTW", self.font_medium, COLORS['text_primary']),
+            ("ultraviolet interface, brave players", self.font_medium, COLORS['text_primary']),
+            ("must flip cards and find pairs", self.font_medium, COLORS['text_primary']),
+            ("before time runs out.", self.font_medium, COLORS['text_primary']),
+            ("", self.font_small, COLORS['text_primary']),
+            ("Little do they know that even", self.font_medium, COLORS['text_primary']),
+            ("Jedi Master Yoda sometimes", self.font_medium, COLORS['text_primary']),
+            ("forgets where he parked his", self.font_medium, COLORS['text_primary']),
+            ("lightsaber... In his Honda Civic,", self.font_medium, COLORS['success']),
+            ("it probably is! 🚗", self.font_medium, COLORS['success']),
+            ("", self.font_small, COLORS['text_primary']),
+            ("", self.font_small, COLORS['text_primary']),
+            ("Powered by the Force", self.font_medium, COLORS['primary_light']),
+            ("(and a really good API)", self.font_small, COLORS['text_secondary']),
+            ("", self.font_small, COLORS['text_primary']),
+            ("Enhanced with WTW Magic", self.font_medium, COLORS['primary']),
+            ("Ultraviolet Theme", self.font_small, COLORS['primary_light']),
+            ("", self.font_small, COLORS['text_primary']),
+            ("", self.font_small, COLORS['text_primary']),
+            ("May the Cards be with you!", self.font_large, COLORS['fireworks']),
+            ("", self.font_small, COLORS['text_primary']),
+            ("", self.font_small, COLORS['text_primary']),
+            ("Press SPACE to begin your journey...", self.font_medium, COLORS['primary'])
+        ]
+        
+        # Animation state
+        self.scroll_y = self.screen.get_height()
+        self.scroll_speed = 50  # pixels per second
+        self.total_height = len(self.credits_text) * 50  # approximate height
+        
+    def update(self, dt):
+        """Update scroll position"""
+        self.scroll_y -= self.scroll_speed * dt / 1000
+        
+        # Check if credits have finished scrolling
+        return self.scroll_y > -self.total_height - 200
+    
+    def handle_event(self, event):
+        """Handle skip events"""
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE or event.key == pygame.K_RETURN or event.key == pygame.K_ESCAPE:
+                return False  # Skip credits
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            return False  # Skip credits
+        return True  # Continue showing credits
+    
+    def draw(self):
+        """Draw the scrolling credits"""
+        self.screen.fill(COLORS['background'])
+        
+        # Add starfield background effect
+        for i in range(50):
+            star_x = random.randint(0, self.screen.get_width())
+            star_y = random.randint(0, self.screen.get_height())
+            star_brightness = random.randint(100, 255)
+            star_color = (star_brightness, star_brightness, star_brightness)
+            pygame.draw.circle(self.screen, star_color, (star_x, star_y), 1)
+        
+        # Draw credits text
+        current_y = self.scroll_y
+        screen_center_x = self.screen.get_width() // 2
+        
+        for text, font, color in self.credits_text:
+            if -100 < current_y < self.screen.get_height() + 100:  # Only draw visible text
+                if text:  # Skip empty lines for rendering
+                    text_surface = font.render(text, True, color)
+                    text_rect = text_surface.get_rect(center=(screen_center_x, current_y))
+                    self.screen.blit(text_surface, text_rect)
+            
+            current_y += 50  # Line spacing
+        
+        # Add fade effect at top and bottom
+        fade_height = 100
+        for i in range(fade_height):
+            alpha = int(255 * (i / fade_height))
+            fade_color = (*COLORS['background'], alpha)
+            
+            # Top fade
+            fade_surface = pygame.Surface((self.screen.get_width(), 1), pygame.SRCALPHA)
+            fade_surface.fill(fade_color)
+            self.screen.blit(fade_surface, (0, i))
+            
+            # Bottom fade
+            self.screen.blit(fade_surface, (0, self.screen.get_height() - i - 1))
+        
+        pygame.display.flip()
+
+def show_credits():
+    """Show Star Wars-style scrolling credits"""
+    pygame.init()
+    screen = pygame.display.set_mode((800, 600))
+    pygame.display.set_caption("Star Wars Memory Game - Opening Credits")
+    
+    credits = ScrollingCredits(screen)
+    clock = pygame.time.Clock()
+    
+    while True:
+        dt = clock.tick(60)
+        
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            
+            if not credits.handle_event(event):
+                pygame.quit()
+                return  # Skip to game
+        
+        if not credits.update(dt):
+            pygame.quit()
+            return  # Credits finished
+        
+        credits.draw()
+
 if __name__ == "__main__":
     print("Starting Enhanced Star Wars Memory Game...")
+    
+    # Show opening credits
+    show_credits()
+    
+    # Start the actual game
+    pygame.init()  # Re-initialize after credits
     game = MemoryGame()
     game.run()
