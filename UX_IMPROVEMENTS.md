@@ -99,7 +99,7 @@ BRIGHT_CYAN, BRIGHT_YELLOW, BRIGHT_GREEN = enhanced colors
 ```
 ⭐ Choose your difficulty:
 🟢 Padawan (Easy)    - 4x4 grid, extra hints
-🟡 Jedi (Normal)     - 6x6 grid, some hints  
+🟡 Jedi (Normal)     - 6x6 grid, some hints
 🔴 Master (Hard)     - 6x6 grid, no hints
 ```
 

@@ -51,7 +51,7 @@ switch ($choice) {
         Write-Host ""
         Write-Host "⚡ This may take a moment to load character images..." -ForegroundColor Yellow
         Write-Host ""
-        
+
         & ".\.venv\Scripts\Activate.ps1"
         python enhanced_memory_game.py
     }
@@ -60,7 +60,7 @@ switch ($choice) {
         Write-Host "🌈 Initializing colorful interface..." -ForegroundColor Magenta
         Write-Host "💡 Preparing smart features..." -ForegroundColor Cyan
         Write-Host ""
-        
+
         & ".\.venv\Scripts\Activate.ps1"
         python enhanced_text_game.py
     }
@@ -70,11 +70,11 @@ switch ($choice) {
         Write-Host "A. Original GUI Game" -ForegroundColor Green
         Write-Host "B. Original Console Game" -ForegroundColor Blue
         Write-Host ""
-        
+
         $classic_choice = Read-Host "Choose classic version (A/B)"
-        
+
         & ".\.venv\Scripts\Activate.ps1"
-        
+
         if ($classic_choice -eq "A" -or $classic_choice -eq "a") {
             Write-Host "🎮 Starting Original GUI version..." -ForegroundColor Green
             python memory_game.py
@@ -100,7 +100,7 @@ switch ($choice) {
 Write-Host ""
 Write-Host "🎊 Thanks for playing! Rate your experience:" -ForegroundColor Cyan
 Write-Host "⭐⭐⭐⭐⭐ Jedi Master" -ForegroundColor Green
-Write-Host "⭐⭐⭐⭐   Jedi Knight" -ForegroundColor Blue  
+Write-Host "⭐⭐⭐⭐   Jedi Knight" -ForegroundColor Blue
 Write-Host "⭐⭐⭐     Padawan" -ForegroundColor Yellow
 Write-Host ""
 Read-Host "Press Enter to continue"
