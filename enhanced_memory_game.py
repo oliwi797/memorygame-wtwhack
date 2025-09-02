@@ -114,6 +114,7 @@ class Card:
         self.is_matched = False
         self.is_hovered = False
         self.image = None
+        self.has_image = False  # Track whether we have a real image or text fallback
         self.rect = pygame.Rect(x, y, CARD_WIDTH, CARD_HEIGHT)
 
         # Animation properties
@@ -125,17 +126,108 @@ class Card:
         self.bounce_offset = 0
 
     def load_image(self):
-        """Load character image from URL with caching"""
+        """Load character image from URL with caching, create text fallback if image fails"""
         try:
             if 'image' in self.character_data and self.character_data['image']:
                 response = urlopen(self.character_data['image'])
                 image_data = response.read()
+
+                # Check if we actually got image data
+                if len(image_data) < 100:  # Very small file, likely not a real image
+                    raise Exception(f"Image file too small ({len(image_data)} bytes)")
+
                 image_surface = pygame.image.load(io.BytesIO(image_data))
+
+                # Check if image is too small (likely a placeholder or broken)
+                if image_surface.get_width() < 50 or image_surface.get_height() < 50:
+                    raise Exception(f"Image dimensions too small ({image_surface.get_width()}x{image_surface.get_height()})")
+
                 # Better scaling with anti-aliasing
                 self.image = pygame.transform.smoothscale(image_surface, (CARD_WIDTH - 20, CARD_HEIGHT - 40))
+                self.has_image = True
+            else:
+                self.create_text_image()
         except Exception as e:
-            print(f"Error loading image for {self.character_data.get('name', 'Unknown')}: {e}")
-            self.image = None
+            print(f"Creating text fallback for {self.character_data.get('name', 'Unknown')}: {e}")
+            self.create_text_image()
+
+    def create_text_image(self):
+        """Create a Star Wars-themed text-based image for characters without valid images"""
+        self.has_image = False
+        # Create a surface for the text-based character card
+        text_surface = pygame.Surface((CARD_WIDTH - 20, CARD_HEIGHT - 40), pygame.SRCALPHA)
+
+        # Use character name
+        name = self.character_data.get('name', 'Unknown')
+
+        # Create fonts for Star Wars style text (bold and larger)
+        try:
+            # Try to use a bold system font that looks more like Star Wars
+            font_large = pygame.font.Font(None, 24)
+            font_large.set_bold(True)
+            font_medium = pygame.font.Font(None, 18)
+            font_medium.set_bold(True)
+        except:
+            font_large = pygame.font.Font(None, 24)
+            font_medium = pygame.font.Font(None, 18)
+
+        # Split name into lines if too long
+        words = name.split()
+        lines = []
+        current_line = ""
+
+        for word in words:
+            test_line = current_line + (" " if current_line else "") + word
+            if font_medium.size(test_line)[0] < (CARD_WIDTH - 30):
+                current_line = test_line
+            else:
+                if current_line:
+                    lines.append(current_line)
+                current_line = word
+        if current_line:
+            lines.append(current_line)
+
+        # Limit to 3 lines maximum
+        if len(lines) > 3:
+            lines = lines[:2]
+            lines.append("...")
+
+        # Calculate total text height
+        line_height = font_medium.get_height()
+        total_height = len(lines) * line_height
+        start_y = (CARD_HEIGHT - 60 - total_height) // 2
+
+        # Draw background with gradient effect using WTW ultraviolet colors
+        gradient_color = COLORS['primary_light']
+        pygame.draw.rect(text_surface, gradient_color, text_surface.get_rect(), border_radius=8)
+
+        # Draw border with primary ultraviolet
+        pygame.draw.rect(text_surface, COLORS['primary'], text_surface.get_rect(), width=2, border_radius=8)
+
+        # Draw text lines
+        for i, line in enumerate(lines):
+            # Use different colors for Star Wars feel
+            text_color = COLORS['text_contrast']
+            if i == 0:  # First line in primary dark color
+                text_color = COLORS['primary_dark']
+
+            text_render = font_medium.render(line, True, text_color)
+            text_rect = text_render.get_rect()
+            text_rect.centerx = text_surface.get_width() // 2
+            text_rect.y = start_y + i * line_height
+            text_surface.blit(text_render, text_rect)
+
+        # Add decorative elements for Star Wars theme
+        star_color = COLORS['fireworks']
+        star_size = 8
+
+        # Draw small stars in corners
+        pygame.draw.circle(text_surface, star_color, (star_size, star_size), 3)
+        pygame.draw.circle(text_surface, star_color, (text_surface.get_width() - star_size, star_size), 3)
+        pygame.draw.circle(text_surface, star_color, (star_size, text_surface.get_height() - star_size), 3)
+        pygame.draw.circle(text_surface, star_color, (text_surface.get_width() - star_size, text_surface.get_height() - star_size), 3)
+
+        self.image = text_surface
 
     def update(self, dt, mouse_pos=None):
         """Update card animations"""
@@ -247,19 +339,20 @@ class Card:
                     image_rect.y = center_y - scaled_height // 2 + 8
                     screen.blit(scaled_image, image_rect)
 
-            # Draw character name
-            name = self.character_data.get('name', 'Unknown')
-            if len(name) > 10:
-                name = name[:10] + "..."
+            # Only draw character name text if we have a real image (not text-based fallback)
+            if self.has_image and self.image:
+                name = self.character_data.get('name', 'Unknown')
+                if len(name) > 10:
+                    name = name[:10] + "..."
 
-            text_color = COLORS['text_primary'] if not self.is_matched else COLORS['success']
-            text = small_font.render(name, True, text_color)
-            text_rect = text.get_rect()
-            text_rect.centerx = center_x
-            text_rect.bottom = center_y + scaled_height // 2 - 5
+                text_color = COLORS['text_primary'] if not self.is_matched else COLORS['success']
+                text = small_font.render(name, True, text_color)
+                text_rect = text.get_rect()
+                text_rect.centerx = center_x
+                text_rect.bottom = center_y + scaled_height // 2 - 5
 
-            if scaled_width > text_rect.width:
-                screen.blit(text, text_rect)
+                if scaled_width > text_rect.width:
+                    screen.blit(text, text_rect)
 
         elif not show_front and scaled_width > 20:
             # Draw card back with Star Wars branding
